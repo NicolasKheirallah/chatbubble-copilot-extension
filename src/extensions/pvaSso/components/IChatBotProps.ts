@@ -10,11 +10,11 @@ export interface IChatbotProps {
      clientID: string;
      authority: string;
      userFriendlyName?: string;
-   
+     context: any; // or ApplicationCustomizerContext
+ 
      /** Controls whether the chatbot dialog is open */
      isOpen: boolean;
    
      /** Callback invoked when the dialog is dismissed */
      onDismiss: () => void;
    }
-   

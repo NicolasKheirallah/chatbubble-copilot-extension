@@ -257,7 +257,79 @@ export class ConfigurationService {
       Log.warn(LOG_SOURCE, 'Failed to update localStorage cache');
     }
   }
+// Add these methods to your ConfigurationService class
 
+public async getRegionalChannelUrl(botUrl: string): Promise<string | null> {
+  try {
+    const urlInfo = this.parseBotUrl(botUrl);
+    if (!urlInfo.isValid) {
+      throw new Error('Invalid bot URL');
+    }
+
+    const response = await fetch(urlInfo.regionalChannelSettingsURL);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch regional channel settings: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.channelUrlsById?.directline || null;
+  } catch (error) {
+    Log.error(LOG_SOURCE, new Error(`Error getting regional channel URL: ${error}`));
+    return null;
+  }
+}
+
+public async getDirectLineToken(botUrl: string): Promise<{ token: string } | null> {
+  try {
+    const response = await fetch(botUrl);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch DirectLine token: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    Log.error(LOG_SOURCE, new Error(`Error getting DirectLine token: ${error}`));
+    return null;
+  }
+}
+
+private parseBotUrl(url: string): {
+  isValid: boolean;
+  environmentEndPoint: string;
+  apiVersion: string;
+  regionalChannelSettingsURL: string;
+} {
+  try {
+    const parsedUrl = new URL(url);
+    const apiVersionParam = parsedUrl.searchParams.get('api-version');
+
+    if (!parsedUrl.pathname.includes('/powervirtualagents')) {
+      throw new Error('URL must contain /powervirtualagents path');
+    }
+
+    if (!apiVersionParam) {
+      throw new Error('Missing api-version parameter');
+    }
+
+    // Extract base environment URL
+    const environmentEndPoint = url.substring(0, url.indexOf('/powervirtualagents'));
+
+    return {
+      isValid: true,
+      environmentEndPoint,
+      apiVersion: apiVersionParam,
+      regionalChannelSettingsURL: `${environmentEndPoint}/powervirtualagents/regionalchannelsettings?api-version=${apiVersionParam}`
+    };
+  } catch (error) {
+    Log.error(LOG_SOURCE, new Error(`Error parsing bot URL: ${error}`));
+    return {
+      isValid: false,
+      environmentEndPoint: '',
+      apiVersion: '',
+      regionalChannelSettingsURL: ''
+    };
+  }
+}
   private getFallbackConfiguration(): IChatbotConfiguration | null {
     try {
       const fallback = localStorage.getItem(ConfigurationService.CACHE_KEY);

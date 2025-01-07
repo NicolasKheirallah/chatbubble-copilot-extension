@@ -1,10 +1,12 @@
-// MSALWrapper.ts
-import { PublicClientApplication, AuthenticationResult, 
-    Configuration, InteractionRequiredAuthError} from "@azure/msal-browser";
+import {
+  PublicClientApplication,
+  AuthenticationResult,
+  Configuration,
+  InteractionRequiredAuthError,
+} from "@azure/msal-browser";
 
 export class MSALWrapper {
   private msalConfig: Configuration;
-
   private msalInstance: PublicClientApplication;
 
   constructor(clientId: string, authority: string) {
@@ -14,70 +16,86 @@ export class MSALWrapper {
         authority: authority,
       },
       cache: {
-        cacheLocation: "localStorage",
+        cacheLocation: "localStorage", // Persistent cache for tokens
       },
     };
 
     this.msalInstance = new PublicClientApplication(this.msalConfig);
   }
 
-  public async handleLoggedInUser(scopes: string[], userEmail: string): Promise<AuthenticationResult | null> {
-    
-    let userAccount = null;
-    const accounts = this.msalInstance.getAllAccounts();
-    
-    if(accounts === null || accounts.length === 0) {
-      console.log("No users are signed in");
-      return null;
-    } else if (accounts.length > 1)
-    {
-        userAccount = this.msalInstance.getAccountByUsername(userEmail);
-    } else {
-        userAccount = accounts[0];
-    }
+  /**
+   * Handle a logged-in user by attempting to retrieve an access token silently.
+   * @param scopes - The scopes for which access is being requested.
+   * @param userEmail - The email address of the user.
+   * @returns An AuthenticationResult or null if no token is available.
+   */
+  public async handleLoggedInUser(
+    scopes: string[],
+    userEmail: string
+  ): Promise<AuthenticationResult | null> {
+    try {
+      const accounts = this.msalInstance.getAllAccounts();
 
-    if(userAccount !== null) {
-        const accessTokenRequest = {
-            scopes: scopes,
-            account: userAccount
-          };
+      if (!accounts || accounts.length === 0) {
+        console.log("No users are signed in.");
+        return null;
+      }
 
-          return this.msalInstance.acquireTokenSilent(accessTokenRequest).then((response) => {            
-            return response;
-          }).catch((errorinternal) => {  
-            console.log(errorinternal);  
-            return null;
-          }); 
-    }
-    return null;
-  }
-  
+      const userAccount =
+        accounts.length === 1
+          ? accounts[0]
+          : this.msalInstance.getAccountByUsername(userEmail);
 
-  public async acquireAccessToken(scopes: string[], userEmail: string): Promise<AuthenticationResult | null> {
-        
+      if (!userAccount) {
+        console.log(`No account found for user: ${userEmail}`);
+        return null;
+      }
 
-    const accessTokenRequest = {
+      const accessTokenRequest = {
         scopes: scopes,
-        loginHint: userEmail
+        account: userAccount,
+      };
+
+      return await this.msalInstance.acquireTokenSilent(accessTokenRequest);
+    } catch (error) {
+      console.error("Error in handleLoggedInUser:", error);
+      return null;
     }
+  }
 
-    return this.msalInstance.ssoSilent(accessTokenRequest).then((response) => {
-        return response
-    }).catch((silentError) => {
-        console.log(silentError);
-        if (silentError instanceof InteractionRequiredAuthError) {
-            return this.msalInstance.loginPopup(accessTokenRequest).then((response) => {
-                return response;
-            }
-            ).catch((error) => {
-                console.log(error);
-                return null;
-            });
+  /**
+   * Acquire an access token interactively if needed.
+   * @param scopes - The scopes for which access is being requested.
+   * @param userEmail - The email address of the user.
+   * @returns An AuthenticationResult or null if token acquisition fails.
+   */
+  public async acquireAccessToken(
+    scopes: string[],
+    userEmail: string
+  ): Promise<AuthenticationResult | null> {
+    const accessTokenRequest = {
+      scopes: scopes,
+      loginHint: userEmail,
+    };
+
+    try {
+      // Try to acquire the token silently
+      return await this.msalInstance.ssoSilent(accessTokenRequest);
+    } catch (silentError) {
+      console.warn("Silent token acquisition failed:", silentError);
+
+      // If interaction is required, fallback to a popup
+      if (silentError instanceof InteractionRequiredAuthError) {
+        try {
+          return await this.msalInstance.loginPopup(accessTokenRequest);
+        } catch (popupError) {
+          console.error("Popup login failed:", popupError);
         }
-    return null;
-    })
-}
+      }
 
+      return null;
+    }
+  }
 }
 
 export default MSALWrapper;

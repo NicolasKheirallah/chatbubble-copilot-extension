@@ -1,0 +1,105 @@
+@import '~@fluentui/react/dist/sass/References.scss';
+
+.dialogRoot {
+  :global(.ms-Dialog-main) {
+    min-height: 600px;
+    min-width: 600px;
+    max-width: 80vw;
+    max-height: 80vh;
+  }
+
+  :global(.ms-Dialog-header) {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 20px;
+    background-color: var(--neutralLighterAlt);
+    border-bottom: 1px solid var(--neutralLight);
+  }
+
+  :global(.ms-Dialog-inner) {
+    padding: 0;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .msDialogHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 20px;
+    background-color: var(--neutralLighterAlt);
+    border-bottom: 1px solid var(--neutralLight);
+  }
+
+  .msDialogInner {
+    padding: 0;
+    height: 100%;
+  }
+
+  .dialogContent {
+    height: 100%;
+    padding: 0;
+  }
+
+  .title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--themePrimary);
+  }
+
+  .closeButton {
+    margin-left: auto;
+  }
+
+  .contentContainer {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .webChat {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    padding: 10px;
+
+    /* Custom scrollbar styling */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--themePrimary);
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--neutralLighterAlt);
+    }
+  }
+
+  .spinnerContainer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    width: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    background-color: var(--white);
+  }
+
+  .errorContainer {
+    margin: 12px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1;
+  }
+}

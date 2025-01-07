@@ -1,5 +1,35 @@
-/* /src/extensions/pvaSso/PvaSsoApplicationCustomizer.module.scss */
 
+@import '~@fluentui/react/dist/sass/References.scss';
+
+/* Apply styles to Fluent UI's internal Dialog class as global */
+:global(.ms-Dialog-main) {
+  /* You can add any additional global styles specific to Fluent UI's Dialog here if needed */
+}
+
+/* Apply styles to Bot Framework's Web Chat classes as global */
+:global(.webchat__initialsAvatar) {
+  border-radius: 50%;
+}
+
+:global(.webchat__stacked-layout__avatar) {
+  margin: 0 8px;
+}
+
+:global(.webchat__send-box) {
+  border-top-color: var(--neutralLight);
+}
+
+:global(.webchat__send-box-text-box__input) {
+  border: 1px solid var(--neutralLight);
+  border-radius: 4px;
+  padding: 8px;
+  
+  &:focus {
+    border-color: var(--themePrimary);
+  }
+}
+
+/* Styles for the modern chat button container */
 .modernChatContainer {
   position: fixed;
   bottom: 20px;
@@ -7,6 +37,7 @@
   z-index: 1000; /* Ensures the button is on top of other elements */
 }
 
+/* Styles for the modern chat button */
 .modernChatButton {
   background-color: #0078d4; /* Example color */
   color: #ffffff;
@@ -26,6 +57,17 @@
   background-color: #005a9e; /* Darker shade on hover */
 }
 
+/* Styles for the chat icon within the button */
 .modernChatIcon {
   font-size: 24px;
+}
+
+/* Define CSS Variables for Theming */
+:root {
+  --neutralLight: #f3f2f1; /* Replace with actual theme color */
+  --themePrimary: #0078d4; /* Replace with actual theme color */
+  --white: #ffffff;
+  --neutral-tertiary: #c8c6c4;
+  --neutral-lighter: #f3f2f1;
+  --theme-lighter-alt: #f4f9fe;
 }

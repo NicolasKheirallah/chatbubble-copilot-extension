@@ -1,4 +1,3 @@
-// PvaSsoApplicationCustomizer.tsx
 import React from 'react';
 import { Log } from '@microsoft/sp-core-library';
 import {
@@ -14,15 +13,12 @@ import { Icon } from '@fluentui/react/lib/Icon';
 
 import styles from './PvaSsoApplicationCustomizer.module.scss';
 import { IChatbotProps } from './components/IChatBotProps';
-import Chatbot from './components/ChatBot';
+import { PVAChatbotDialog } from './components/PVAChatbotDialog';
+import { ConfigurationService, IChatbotConfiguration } from './services/ConfigurationService';
 
 initializeIcons();
 
 const LOG_SOURCE: string = 'PvaSsoApplicationCustomizer';
-
-interface IChatState {
-  isOpen: boolean;
-}
 
 interface IChatToggleButtonProps {
   label: string;
@@ -37,68 +33,70 @@ const ChatToggleButton: React.FC<IChatToggleButtonProps> = (props) => {
       className={props.className}
       title={props.label}
       onClick={props.onClick}
-      aria-label={props.label}
     >
       <Icon iconName="Chat" className={props.iconClassName} />
     </button>
   );
 };
 
-export interface IPvaSsoApplicationCustomizerProperties {
-  botURL: string;
-  botName?: string;
-  buttonLabel?: string;
-  userEmail: string;
-  botAvatarImage?: string;
-  botAvatarInitials?: string;
-  greet?: boolean;
-  customScope: string;
-  clientID: string;
-  authority: string;
-}
+export interface IPvaSsoApplicationCustomizerProperties extends IChatbotConfiguration {}
 
 export default class PvaSsoApplicationCustomizer
   extends BaseApplicationCustomizer<IPvaSsoApplicationCustomizerProperties> {
 
-  private _buttonPlaceholder: PlaceholderContent | undefined;
-  private _chatPlaceholder: PlaceholderContent | undefined;
-  private _chatState: IChatState = { isOpen: false };
+  private _placeholder: PlaceholderContent | undefined;
+  private _chatVisible: boolean = false;
+  private _configurationService: ConfigurationService;
+  private _configuration: IChatbotConfiguration | undefined;
 
   @override
   public async onInit(): Promise<void> {
     try {
       Log.info(LOG_SOURCE, 'Initializing application customizer');
+
+      // Initialize configuration service
+      this._configurationService = new ConfigurationService(this.context);
       
+      // Get configuration
+      this._configuration = await this._configurationService.getConfiguration();
+      
+      Log.info(LOG_SOURCE, `Configuration loaded: ${JSON.stringify(this._configuration)}`);
+
       this._setDefaultProperties();
       this._applyThemeColor();
 
-      // Create both placeholders
-      this._buttonPlaceholder = this.context.placeholderProvider.tryCreateContent(
-        PlaceholderName.Bottom
+      // Create placeholder
+      this._placeholder = this.context.placeholderProvider.tryCreateContent(
+        PlaceholderName.Bottom,
+        { onDispose: this._onDispose }
       );
 
-      this._chatPlaceholder = this.context.placeholderProvider.tryCreateContent(
-        PlaceholderName.Bottom
-      );
+      if (!this._placeholder) {
+        console.error('Could not find placeholder');
+        return Promise.reject(new Error('Could not find placeholder'));
+      }
 
       this._renderPlaceholders();
 
       return Promise.resolve();
     } catch (error) {
       Log.error(LOG_SOURCE, error);
+      console.error('Failed to initialize application customizer:', error);
       return Promise.reject(error);
     }
   }
 
   private _setDefaultProperties(): void {
-    if (!this.properties.buttonLabel || this.properties.buttonLabel.trim() === '') {
-      this.properties.buttonLabel = strings.DefaultButtonLabel || 'Chat';
+    if (!this._configuration) return;
+
+    if (!this._configuration.buttonLabel || this._configuration.buttonLabel.trim() === '') {
+      this._configuration.buttonLabel = strings.DefaultButtonLabel || 'Chat';
     }
-    if (!this.properties.botName || this.properties.botName.trim() === '') {
-      this.properties.botName = strings.DefaultBotName || 'Support Chat';
+    if (!this._configuration.botName || this._configuration.botName.trim() === '') {
+      this._configuration.botName = strings.DefaultBotName || 'Support Chat';
     }
-    if (this.properties.greet !== true) {
-      this.properties.greet = false;
+    if (this._configuration.greet !== true) {
+      this._configuration.greet = false;
     }
   }
 
@@ -109,6 +107,17 @@ export default class PvaSsoApplicationCustomizer
       .${styles.modernChatButton} {
         background-color: ${theme.palette.themePrimary};
         color: ${theme.palette.white};
+        border: none;
+        padding: 0;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        width: 60px;
+        height: 60px;
+        transition: background-color 0.3s ease;
       }
       .${styles.modernChatButton}:hover {
         background-color: ${theme.palette.themeDarkAlt};
@@ -118,71 +127,55 @@ export default class PvaSsoApplicationCustomizer
   }
 
   private _renderPlaceholders(): void {
-    // Render button
-    if (this._buttonPlaceholder && !this._buttonPlaceholder.isDisposed) {
-      this._buttonPlaceholder.domElement.className = styles.modernChatContainer;
-      ReactDOM.render(
-        <ChatToggleButton
-          label={this.properties.buttonLabel || 'Chat'}
-          onClick={this._toggleChat}
-          className={styles.modernChatButton}
-          iconClassName={styles.modernChatIcon}
-        />,
-        this._buttonPlaceholder.domElement
-      );
-    }
+    if (this._placeholder && !this._placeholder.isDisposed) {
+      this._placeholder.domElement.className = styles.modernChatContainer;
 
-    // Render chat if open
-    if (this._chatPlaceholder && !this._chatPlaceholder.isDisposed) {
-      if (this._chatState.isOpen) {
+      if (this._chatVisible && this._configuration) {
+        // Render chat dialog
         const user = this.context.pageContext.user;
-        const userEmail: string = user?.email ?? '';
-        const userFriendlyName: string = user?.displayName ?? '';
-
         const chatbotProps: IChatbotProps = {
-          botURL: this.properties.botURL,
-          botName: this.properties.botName,
-          buttonLabel: this.properties.buttonLabel,
-          userEmail,
-          botAvatarImage: this.properties.botAvatarImage,
-          botAvatarInitials: this.properties.botAvatarInitials,
-          greet: this.properties.greet,
-          customScope: this.properties.customScope,
-          clientID: this.properties.clientID,
-          authority: this.properties.authority,
-          userFriendlyName,
+          ...this._configuration,
+          context: this.context,
+          userEmail: user?.email ?? '',
+          userFriendlyName: user?.displayName ?? '',
           isOpen: true,
           onDismiss: this._hideChat
         };
 
-        ReactDOM.render(<Chatbot {...chatbotProps} />, this._chatPlaceholder.domElement);
+        ReactDOM.render(<PVAChatbotDialog {...chatbotProps} />, this._placeholder.domElement);
       } else {
-        ReactDOM.unmountComponentAtNode(this._chatPlaceholder.domElement);
+        // Render toggle button
+        ReactDOM.render(
+          <ChatToggleButton
+            label={this._configuration?.buttonLabel || 'Chat'}
+            onClick={this._toggleChat}
+            className={styles.modernChatButton}
+            iconClassName={styles.modernChatIcon}
+          />,
+          this._placeholder.domElement
+        );
       }
     }
   }
 
   private _toggleChat = (): void => {
-    if (!this.properties.botURL?.trim()) {
-      Log.error(LOG_SOURCE, new Error('Error: botURL is undefined or empty'));
+    if (!this._configuration) {
+      console.error('Configuration not available');
       return;
     }
 
-    this._chatState.isOpen = !this._chatState.isOpen;
+    this._chatVisible = !this._chatVisible;
     this._renderPlaceholders();
   };
 
   private _hideChat = (): void => {
-    this._chatState.isOpen = false;
+    this._chatVisible = false;
     this._renderPlaceholders();
   };
 
-  protected onDispose(): void {
-    if (this._buttonPlaceholder && !this._buttonPlaceholder.isDisposed) {
-      ReactDOM.unmountComponentAtNode(this._buttonPlaceholder.domElement);
+  private _onDispose = (): void => {
+    if (this._placeholder && !this._placeholder.isDisposed) {
+      ReactDOM.unmountComponentAtNode(this._placeholder.domElement);
     }
-    if (this._chatPlaceholder && !this._chatPlaceholder.isDisposed) {
-      ReactDOM.unmountComponentAtNode(this._chatPlaceholder.domElement);
-    }
-  }
+  };
 }
