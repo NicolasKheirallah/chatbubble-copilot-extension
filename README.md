@@ -1,6 +1,9 @@
-# Setup Guide
+# Readme
 
 This document provides a step-by-step guide for setting up the chatbot solution in your SharePoint environment. It covers everything from prerequisites to deployment and troubleshooting to ensure a seamless setup experience.
+
+This is based on SharePointSSOComponent:
+https://github.com/microsoft/CopilotStudioSamples/tree/master/SharePointSSOComponent
 
 ---
 
