@@ -1,7 +1,7 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/spfx/client-side-extension-manifest.schema.json",
 
-  "id": "bbcf8287-ea2d-4bb6-868f-19b9cf4b0812",
+  "id": "7c2dbe76-c0b8-46d2-a4a2-1b20e50b3df7",
   "alias": "PvaSsoApplicationCustomizer",
   "componentType": "Extension",
   "extensionType": "ApplicationCustomizer",

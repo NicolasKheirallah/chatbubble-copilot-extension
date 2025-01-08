@@ -172,7 +172,7 @@ export class ConfigurationService {
 
   private async getConfigFromTenantExtension(): Promise<IChatbotConfiguration | null> {
     try {
-      const appId = 'bbcf8287-ea2d-4bb6-868f-19b9cf4b0812';
+      const appId = '7c2dbe76-c0b8-46d2-a4a2-1b20e50b3df7';
       const response = await this.graphClient.api(`/applications/${appId}`)
         .select('appDefinition')
         .get();

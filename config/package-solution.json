@@ -2,7 +2,7 @@
   "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/package-solution.schema.json",
   "solution": {
     "name": "chatbubble-copilot-extension-sso-client-side-solution",
-    "id": "fa4a9d49-6fbb-45d4-8cde-28e121ea64c1",
+    "id": "60705f7c-295f-4002-ace3-255ebb264645",
     "version": "1.0.0.0",
     "includeClientSideAssets": true,
     "skipFeatureDeployment": true,
@@ -39,7 +39,7 @@
       {
         "title": "Application Extension - Deployment of custom action",
         "description": "Deploys a custom action with ClientSideComponentId association",
-        "id": "b9966a99-b9c1-4136-a847-d3e236c784a0",
+        "id": "e9b4ce8a-6172-4f4c-ae75-dc8a0f1b936b",
         "version": "1.0.0.0",
         "assets": {
           "elementManifests": [

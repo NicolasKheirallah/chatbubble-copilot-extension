@@ -9,7 +9,7 @@
     },
     "version": "1.18.0",
     "libraryName": "chatbubble-copilot-extension-sso",
-    "libraryId": "fa4a9d49-6fbb-45d4-8cde-28e121ea64c1",
+    "libraryId": "60705f7c-295f-4002-ace3-255ebb264645",
     "environment": "spo",
     "packageManager": "npm",
     "solutionName": "chatbubble-copilot-extension-sso",

@@ -6,7 +6,7 @@
     "default": {
       "pageUrl": "YOUR_SHAREPOINT_SITE",
       "customActions": {
-        "bbcf8287-ea2d-4bb6-868f-19b9cf4b0812": {
+        "7c2dbe76-c0b8-46d2-a4a2-1b20e50b3df7": {
           "location": "ClientSideExtension.ApplicationCustomizer",
           "properties": {
             "botURL": "YOUR_BOT_URL",
@@ -21,7 +21,7 @@
     "pvaSso": {
       "pageUrl": "YOUR_SHAREPOINT_SITE",
       "customActions": {
-        "bbcf8287-ea2d-4bb6-868f-19b9cf4b0812": {
+        "7c2dbe76-c0b8-46d2-a4a2-1b20e50b3df7": {
           "location": "ClientSideExtension.ApplicationCustomizer",
           "properties": {
             "botURL": "YOUR_BOT_URL",

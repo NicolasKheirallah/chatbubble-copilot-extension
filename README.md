@@ -1,94 +1,129 @@
-# Readme
+# Chatbot Integration for SharePoint Online
 
-This document provides a step-by-step guide for setting up the chatbot solution in your SharePoint environment. It covers everything from prerequisites to deployment and troubleshooting to ensure a seamless setup experience.
+## Summary
 
-This is based on SharePointSSOComponent:
-https://github.com/microsoft/CopilotStudioSamples/tree/master/SharePointSSOComponent
+This solution integrates a chatbot within SharePoint Online using a Tenant App Catalog and Azure AD App Registration. It provides a seamless way to enhance user engagement on SharePoint sites by embedding a customizable chatbot interface.
+
+This is based on: SharePointSSOComponent
+
+### Key Features
+
+- Tenant-wide chatbot integration for SharePoint Online.
+- Configurable settings via SharePoint lists or JSON fallback.
+- Secure authentication using Azure AD and MSAL.
+- Easy deployment and management.
+
+### Screenshots
+
+*Add screenshots here to demonstrate the solution in action.*
 
 ---
 
-## **Prerequisites**
+## Technologies Used
 
-Before proceeding with the setup, ensure you have the following:
+- **SharePoint Framework (SPFx)**
+- **React**
+- **Azure AD for Authentication**
+- **Microsoft Graph API**
+- **SCSS for Styling**
 
-1. **Tenant App Catalog**:
-   - A Tenant App Catalog site in your SharePoint Online environment.
+---
+
+## Compatibility
+
+| Environment                     | Supported |
+|---------------------------------|-----------|
+| SharePoint Online               | Yes       |
+| SharePoint Server 2019          | No        |
+| SharePoint Server 2016          | No        |
+| Node.js v18                     | Yes       |
+| Local Workbench                 | No        |
+| Hosted Workbench                | Yes       |
+
+Refer to [SPFx Compatibility Matrix](https://aka.ms/spfx-matrix) for detailed information.
+
+---
+
+## Prerequisites
+
+Before deploying the chatbot solution, ensure you have the following:
+
+1. **SharePoint Environment**:
+
+   - A Tenant App Catalog site.
 
 2. **Permissions**:
-   - Permissions to create lists and manage App Catalog configurations.
+
+   - Administrative permissions to manage the App Catalog and create lists.
 
 3. **Azure AD App Registration**:
-   - An App Registration with appropriate API permissions for MSAL authentication.
+
+   - Configured with necessary API permissions for MSAL authentication.
 
 4. **Development Tools**:
-   - A local development environment with Node.js, NPM, Gulp, and Visual Studio Code installed.
+
+   - Node.js, NPM, Gulp, and Visual Studio Code installed.
+
+5. **Access to PVA Chatbot**:
+
+   - Endpoint URL for the chatbot to be embedded.
 
 ---
 
-## **Steps**
+## Deployment Steps
 
-### **1. Deploying the Application Customizer**
+### 1. Prepare the SPFx Solution
 
-1. Open the project in your development environment.
-2. Use the following command to bundle your solution:
+1. Clone this repository and navigate to the solution folder.
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Bundle the solution:
    ```bash
    gulp bundle --ship
    ```
-3. Package your solution using:
+4. Package the solution:
    ```bash
    gulp package-solution --ship
    ```
-4. Upload the generated `.sppkg` file from the `sharepoint/solution` folder to your Tenant App Catalog.
-5. Deploy the package and ensure the tenant-wide deployment option is enabled.
 
----
+### 2. Deploy to the Tenant App Catalog
 
-### **2. Grant API Permissions**
+1. Navigate to your Tenant App Catalog.
+2. Upload the `.sppkg` file from the `sharepoint/solution` folder.
+3. Deploy the package and enable tenant-wide deployment.
 
-1. Navigate to the Azure Portal and locate your App Registration.
-2. Under **API Permissions**, ensure the following permissions are granted:
+### 3. Configure Azure AD Permissions
+
+1. Open the Azure Portal and locate your App Registration.
+2. Grant the following API permissions:
    - `User.Read`
-   - Any custom scopes required for accessing your chatbot backend.
+   - Any additional scopes required by your backend.
 3. Grant admin consent for the permissions.
 
----
+### 4. Set Up the Configuration List
 
-### **3. Configure the Extension**
+1. Create a SharePoint list named `TenantWideExtensionsConfig` with the following columns:
 
-After deploying the extension, configure its settings by creating the following resources.
+   - **Title** (Default): Use for identification or leave it empty.
+   - **BotURL**: Single line of text (Chatbot endpoint URL).
+   - **BotName**: Single line of text (Chatbot display name).
+   - **ButtonLabel**: Single line of text (Chat toggle button label).
+   - **BotAvatarImage**: Hyperlink or Picture (Avatar image URL).
+   - **BotAvatarInitials**: Single line of text (Fallback initials for avatar).
+   - **Greet**: Yes/No (Should the bot greet users?).
+   - **CustomScope**: Single line of text (MSAL authentication scope).
+   - **ClientID**: Single line of text (Azure AD App Registration Client ID).
+   - **Authority**: Single line of text (Azure AD Authority URL).
 
-#### **A. Configuration List**
-
-Create a SharePoint list to store your chatbot configurations.
-
-1. Navigate to the **Tenant App Catalog Site**:
-   - The URL typically follows the pattern: `https://<tenant>-admin.sharepoint.com/sites/AppCatalog`.
-   - Replace `<tenant>` with your actual tenant name.
-
-2. Create a New SharePoint List:
-   - **Name:** `TenantWideExtensionsConfig`
-   - **Columns:**
-     - **Title** (Default): Use for identification or leave it empty.
-     - **BotURL** (Single line of text): The endpoint URL of your PVA chatbot.
-     - **BotName** (Single line of text): The display name of your chatbot.
-     - **ButtonLabel** (Single line of text): Label for the chat toggle button (e.g., "Chat with us").
-     - **BotAvatarImage** (Hyperlink or Picture): URL to the chatbot's avatar image.
-     - **BotAvatarInitials** (Single line of text): Initials for the chatbot's avatar if no image is provided.
-     - **Greet** (Yes/No): Determines if the chatbot should greet the user upon opening.
-     - **CustomScope** (Single line of text): The scope for MSAL authentication.
-     - **ClientID** (Single line of text): Azure AD App Registration's Client ID.
-     - **Authority** (Single line of text): Azure AD Authority URL (e.g., `https://login.microsoftonline.com/<tenant-id>`).
-
-3. Add a Configuration Item:
-   - Click **New** to add a new item.
-   - Fill in all the fields with appropriate values.
-   - Save the item.
+2. Add a single item with the required values.
 
    > **Note:** Ensure that only **one item** exists in this list, as the Application Customizer fetches the **first item** for configuration.
 
-#### **B. JSON Backup Configuration**
+### 5. Configure JSON Fallback Configuration
 
-If the configuration list is not available, the solution will fallback to a hardcoded JSON configuration. Update the JSON file with the following fields:
+If the configuration list is not available, update the fallback JSON file with the following fields:
 
 ```json
 {
@@ -104,74 +139,46 @@ If the configuration list is not available, the solution will fallback to a hard
 }
 ```
 
-> **Note:** This JSON serves as a fallback mechanism and should match the structure of the SharePoint list.
+   > **Note:** Ensure the structure matches that of the SharePoint list.
+
+### 6. Verify Deployment
+
+1. Navigate to a SharePoint site where the extension is deployed.
+2. Confirm the chatbot toggle button appears.
+3. Click the button to test the chatbot functionality.
 
 ---
 
-### **4. Configuration Setup**
+## Troubleshooting
 
-Before diving into the code, set up a SharePoint list to store your chatbot configurations.
+### Common Issues
 
-1. Create the Configuration List
+1. **Chatbot not appearing**:
+   - Verify the configuration list setup and JSON fallback.
 
-Navigate to the Tenant App Catalog Site:
+2. **Authentication Errors**:
+   - Check Azure AD App Registration permissions.
 
-Typically, the App Catalog site URL follows the pattern: `https://<tenant>-admin.sharepoint.com/sites/AppCatalog`. Replace `<tenant>` with your actual tenant name.
+3. **UI Issues**:
+   - Confirm SCSS styles are correctly compiled.
 
-Create a New SharePoint List:
+### Debugging Tips
 
-- **Name:** `TenantWideExtensionsConfig`
-- **Columns:**
-  - **Title (Default):** Use for identification or leave it empty.
-  - **BotURL (Single line of text):** The endpoint URL of your PVA chatbot.
-  - **BotName (Single line of text):** The display name of your chatbot.
-  - **ButtonLabel (Single line of text):** Label for the chat toggle button (e.g., "Chat with us").
-  - **BotAvatarImage (Hyperlink or Picture):** URL to the chatbot's avatar image.
-  - **BotAvatarInitials (Single line of text):** Initials for the chatbot's avatar if no image is provided.
-  - **Greet (Yes/No):** Determines if the chatbot should greet the user upon opening.
-  - **CustomScope (Single line of text):** The scope for MSAL authentication.
-  - **ClientID (Single line of text):** Azure AD App Registration's Client ID.
-  - **Authority (Single line of text):** Azure AD Authority URL (e.g., `https://login.microsoftonline.com/<tenant-id>`).
-
-Add a Configuration Item:
-
-- Click **New** to add a new item.
-- Fill in all the fields with appropriate values.
-- Save the item.
-
-   > **Note:** Ensure that only **one item** exists in this list, as the Application Customizer fetches the **first item** for configuration.
+- Use browser developer tools to inspect network requests.
+- Review Azure Portal logs for authentication errors.
+- Verify SPFx configuration in `elements.xml`.
 
 ---
 
-### **5. Verify the Setup**
+## Version History
 
-1. Open a SharePoint site where the extension is deployed.
-2. Verify that the chatbot toggle button appears as expected.
-3. Click the button to open the chatbot window and validate functionality.
-
----
-
-### **6. Troubleshooting**
-
-#### **Common Issues**
-
-1. **Chatbot not loading:**
-   - Ensure the configuration list is properly set up.
-   - Verify the JSON fallback configuration if the list is unavailable.
-
-2. **Authentication errors:**
-   - Confirm that the Azure AD App Registration permissions are correctly configured.
-
-3. **UI Issues:**
-   - Verify that the SCSS styles are properly compiled and included in the project.
-
-#### **Debugging Tips**
-
-- Use browser developer tools to inspect network requests and console logs.
-- Check Azure Portal logs for failed authentication attempts.
-- Ensure the SPFx web part is correctly configured in the elements.xml file.
+| Version | Date       | Comments        |
+|---------|------------|-----------------|
+| 1.0     | Jan 8, 2025 | Initial Release |
 
 ---
 
-This completes the setup process for your chatbot solution. If you encounter issues, refer to the troubleshooting section or reach out to the support team for assistance.
+## Disclaimer
+
+**THIS CODE IS PROVIDED *AS IS* WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING ANY IMPLIED WARRANTIES OF FITNESS FOR A PARTICULAR PURPOSE, MERCHANTABILITY, OR NON-INFRINGEMENT.**
 
