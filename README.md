@@ -4,7 +4,7 @@
 
 This solution integrates a chatbot within SharePoint Online using a Tenant App Catalog and Azure AD App Registration. It provides a seamless way to enhance user engagement on SharePoint sites by embedding a customizable chatbot interface.
 
-This is based on: SharePointSSOComponent
+This is based on SharePointSSO
 
 ### Key Features
 
@@ -15,7 +15,33 @@ This is based on: SharePointSSOComponent
 
 ### Screenshots
 
-*Add screenshots here to demonstrate the solution in action.*
+#### API Permissions Setup
+
+![API Permissions Setup](images/apiPermissions.png)
+
+#### Adding APIs in Azure AD
+
+![Adding APIs in Azure AD](images/apisMyOrganization.png)
+
+#### Chatbot Interface
+
+![Chatbot Interface](images/Chatbot.png)
+
+#### Application Client ID in Azure
+
+![Application Client ID](images/clientID.png)
+
+#### Custom Scopes for API
+
+![Custom Scopes for API](images/customScope.png)
+
+#### Scope Permissions Setup
+
+![Scope Permissions Setup](images/scopePermissions.png)
+
+#### Token Exchange URL Configuration
+
+![Token Exchange URL Configuration](images/toeknExchangeURL.png)
 
 ---
 
@@ -169,7 +195,13 @@ If the configuration list is not available, update the fallback JSON file with t
 - Verify SPFx configuration in `elements.xml`.
 
 ---
+## Solution
 
+Solution|Author(s)
+--------|---------
+Chatbubble-copilot-extension | Nicolas Kheirallah
+
+---
 ## Version History
 
 | Version | Date       | Comments        |
