@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { IChatbotProps } from './IChatBotProps';
+import { IChatbotProps } from '../types/IChatBotProps';
 import { PVAChatbotDialog } from './PVAChatbotDialog';
 
 const Chatbot: React.FC<IChatbotProps> = (props) => {
