@@ -1,4 +1,3 @@
-// MSALWrapper.ts
 import {
   PublicClientApplication,
   AuthenticationResult,
@@ -13,21 +12,24 @@ import {
 
 export class MSALWrapper {
   private msalInstance: PublicClientApplication;
-  private static readonly TIMEOUT = 10000; // 10 seconds timeout
+  private initializePromise: Promise<void> | null = null;
+  private static readonly TIMEOUT = 10000;
 
   constructor(clientId: string, authority: string) {
     const authConfig: BrowserAuthOptions = {
       clientId,
       authority,
+      redirectUri: window.location.origin,
     };
-
 
     const systemConfig: BrowserSystemOptions = {
       loggerOptions: {
-        logLevel: 3, // Warning level
+        logLevel: 3,
         loggerCallback: (level: number, message: string) => {
           if (level > 2) {
-            console.warn(`MSAL: ${message}`);
+            if (process.env.NODE_ENV !== 'production') {
+              console.warn(`MSAL: ${message}`);
+            }
           }
         }
       }
@@ -35,10 +37,15 @@ export class MSALWrapper {
 
     const msalConfig: Configuration = {
       auth: authConfig,
-      system: systemConfig
+      system: systemConfig,
+      cache: {
+        cacheLocation: 'sessionStorage',
+        storeAuthStateInCookie: false,
+      }
     };
 
     this.msalInstance = new PublicClientApplication(msalConfig);
+    this.initializePromise = this.initializeMsal();
   }
 
   private async initializeMsal(): Promise<void> {
@@ -50,9 +57,22 @@ export class MSALWrapper {
           MSALWrapper.TIMEOUT)
         )
       ]);
+      
+      this.msalInstance.addEventCallback((event) => {
+        if (event.error) {
+          console.error('MSAL Event Error:', event.error);
+        }
+      });
+      
     } catch (error) {
       console.error("MSAL Initialization Error:", error);
       throw error;
+    }
+  }
+
+  private async ensureInitialized(): Promise<void> {
+    if (this.initializePromise) {
+      await this.initializePromise;
     }
   }
 
@@ -61,7 +81,7 @@ export class MSALWrapper {
     userEmail: string
   ): Promise<AuthenticationResult | null> {
     try {
-      await this.initializeMsal();
+      await this.ensureInitialized();
       
       const accounts = this.msalInstance.getAllAccounts();
       if (!accounts || accounts.length === 0) {
@@ -110,7 +130,7 @@ export class MSALWrapper {
     userEmail: string
   ): Promise<AuthenticationResult | null> {
     try {
-      await this.initializeMsal();
+      await this.ensureInitialized();
 
       const silentRequest: SilentRequest = {
         scopes,
@@ -150,7 +170,7 @@ export class MSALWrapper {
 
   public async logout(): Promise<void> {
     try {
-      await this.initializeMsal();
+      await this.ensureInitialized();
       const currentAccount = this.msalInstance.getAllAccounts()[0];
       if (currentAccount) {
         await this.msalInstance.logoutPopup({
